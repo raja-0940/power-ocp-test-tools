@@ -1,6 +1,5 @@
 #!/bin/bash
 
-#!/bin/bash
 set -e
 
 AUTHORINO_VERSION=v0.23.0
