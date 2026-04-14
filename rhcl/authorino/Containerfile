@@ -1,0 +1,16 @@
+FROM registry.access.redhat.com/ubi10/ubi-micro:latest
+
+ARG AUTHORINO_VERSION=v0.23.0
+
+# ADD all arch-specific binaries
+ADD ./tmp/authorino/authorino-${AUTHORINO_VERSION/v/}/authorino-* /usr/local/bin/
+
+# Select correct binary for current arch at build time
+RUN mv /usr/local/bin/authorino-$(arch) /usr/local/bin/authorino && \
+    rm -f /usr/local/bin/authorino-* && \
+    chmod +x /usr/local/bin/authorino
+
+USER 65532:65532
+
+EXPOSE 50051
+ENTRYPOINT ["/usr/local/bin/authorino"]
