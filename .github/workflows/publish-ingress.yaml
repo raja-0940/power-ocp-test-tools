@@ -1,9 +1,4 @@
-name: Publish rhcl/llm-d-inference-sim
-
-# This workflow uses actions that are not certified by GitHub.
-# They are provided by a third-party and are governed by
-# separate terms of service, privacy policy, and support
-# documentation.
+name: Publish ingress
 
 on:
   push:
@@ -11,14 +6,12 @@ on:
       - main
     tags: [ 'v*.*.*' ]
     paths:
-      - '.github/workflows/publish-llm-d-inference-sim.yaml'
-      - 'rhcl/llm-d-inference-sim/**'
+      - '.github/workflows/publish-ingress.yaml'
+      - 'network-latency/**'
 
 env:
-  # Use docker.io for Docker Hub if empty
   REGISTRY: quay.io
-  # github.repository as <account>/<repo>
-  IMAGE_NAME: pbastide_rh/llm-d-inference-sim-ppc64le
+  IMAGE_NAME: pbastide_rh/network-latency
 
 jobs:
   build:
@@ -33,24 +26,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
-
-      - name: Setup Go 1.24.x
-        uses: actions/setup-go@v7
-        with:
-          go-version: '1.26.x'
-
-      - name: Build the binaries
-        run: |
-          set -ex && mkdir -p tmp/ && \
-          cd tmp/ && \
-          curl -O -L https://github.com/llm-d/llm-d-inference-sim/archive/refs/tags/v0.8.2.zip && \
-              unzip v0.8.2.zip && \
-          cd llm-d-inference-sim-0.8.2 && \
-          cp cmd/llm-d-inference-sim/main.go cmd/cmd.go && \
-          CGO_ENABLED=0 GOOS=linux GOARCH=ppc64le go build -o bin/llm-d-inference-sim-ppc64le ./cmd/cmd.go && \
-          CGO_ENABLED=0 GOOS=linux GOARCH=s390x go build -o bin/llm-d-inference-sim-s390x ./cmd/cmd.go
-          ls -al bin/
-          pwd
 
       # Install the cosign tool except on PR
       # https://github.com/sigstore/cosign-installer
@@ -77,16 +52,16 @@ jobs:
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
+      - name: Build Image
         id: build-image
         uses: redhat-actions/buildah-build@v3
         with:
-          context: .
-          platforms: linux/ppc64le,linux/s390x
+          context: ingress
+          platforms: linux/ppc64le
           containerfiles: |
-            ./rhcl/llm-d-inference-sim/Containerfile
+            ./network-latency/Containerfile
           tags: latest ${{ github.sha }}
-          image: llm-d-inference-sim-ppc64le
+          image: network-latency
           layers: false
           oci: true
 
